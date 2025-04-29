@@ -15,7 +15,7 @@ spec:
       containers:
       - name: medina-container
         image: medina-site
-        imagePullPolicy: Never  # Important pour utiliser l'image locale
+        imagePullPolicy: Never  
         ports:
         - containerPort: 81
 ---
@@ -30,4 +30,4 @@ spec:
   ports:
     - port: 81
       targetPort: 81
-      nodePort: 30081  # Port externe fixe (optionnel)
+      nodePort: 30081
