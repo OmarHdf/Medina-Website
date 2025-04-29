@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: medina-website-deployment
+  labels:
+    app: medina-website
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: medina-website
+  template:
+    metadata:
+      labels:
+        app: medina-website
+    spec:
+      containers:
+      - name: medina-website
+        image: medina-site:latest  # Utilisation de votre image locale
+        imagePullPolicy: IfNotPresent  # Pour utiliser l'image locale dans Minikube
+        ports:
+        - containerPort: 81  # Port du conteneur (comme configuré dans votre Dockerfile)
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: medina-website-service
+spec:
+  selector:
+    app: medina-website
+  ports:
+    - protocol: TCP
+      port: 81  # Port externe (identique au port du conteneur)
+      targetPort: 81  # Port du conteneur
+  type: NodePort  # Pour Minikube
