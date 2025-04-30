@@ -20,7 +20,7 @@ spec:
     metadata:
       labels:
         app: medina
-        version: "${NEW_VERSION}"  # Variable Jenkins automatique
+       
       annotations:
         build.timestamp: "$(date +%s)"  # Timestamp du déploiement
     spec:
