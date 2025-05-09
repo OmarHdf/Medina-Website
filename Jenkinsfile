@@ -267,15 +267,16 @@ stage('Déploiement Kubernetes') {
                 kubectl get pods -o wide
                 kubectl get events --sort-by=.metadata.creationTimestamp
                 kubectl describe deployment medina-website
-                 echo "=== APPLICATION ACCESS ==="
-                NODE_PORT=$(kubectl get service medina-service -o=jsonpath='{.spec.ports[0].nodePort}')
-NODE_IP=$(minikube ip)
-echo "App running at: http://$NODE_IP:$NODE_PORT"
 
+                echo "=== APPLICATION ACCESS ==="
+                NODE_PORT=$(kubectl get service medina-service -o=jsonpath='{.spec.ports[0].nodePort}')
+                NODE_IP=$(minikube ip)
+                echo "App running at: http://$NODE_IP:$NODE_PORT"
             '''
         }
     }
 }
+
     }
 
        post {
