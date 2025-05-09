@@ -265,8 +265,7 @@ stage('Déploiement Kubernetes') {
             sh '''
                 echo "=== RAPPORT DE SANTÉ ==="
                 kubectl get pods -o wide
-                kubectl get events --sort-by=.metadata.creationTimestamp
-                kubectl describe deployment medina-website
+                
 
                 echo "=== APPLICATION ACCESS ==="
                 NODE_PORT=$(kubectl get service medina-service -o=jsonpath='{.spec.ports[0].nodePort}')
