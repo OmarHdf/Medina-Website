@@ -259,6 +259,7 @@ stage('Déploiement Kubernetes') {
         }
     }
 }
+            
         stage('Post-Déploiement') {
     steps {
         script {
@@ -278,7 +279,7 @@ stage('Déploiement Kubernetes') {
 
     }
 
-       post {
+      post {
         always {
             script {
                 // 1. Archivez tous les rapports
@@ -318,11 +319,11 @@ stage('Déploiement Kubernetes') {
              <div class="deployment-link">
             <h3>Accès au Déploiement</h3>
             <p>L'application a été déployée avec succès sur Kubernetes :</p>
-            <a href="http://192.168.58.2:30081" 
+            <a href="http://192.168.49.2:30081" 
                style="color: #2c5aa0; font-weight: bold;">
                Accéder à l'application
             </a>
-            <p><small>IP: 192.168.58.2:30081</small></p>
+            <p><small>IP: 192.168.49.2:30081</small></p>
         </div>
         </div>
 
