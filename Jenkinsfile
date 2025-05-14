@@ -30,18 +30,11 @@ pipeline {
         }
 
         stage('Checkout Code') {
-            steps {
-                checkout([
-                    $class: 'GitSCM',
-                    branches: [[name: 'main']],
-                    extensions: [],
-                    userRemoteConfigs: [[
-                        url: 'https://github.com/OmarHdf/Medina-Website.git',
-                        credentialsId: 'GITHUB_TOKEN'
-                    ]]
-                ])
-            }
-        }
+    steps {
+        git credentialsId: 'GITHUB_TOKEN', branch: 'main', url: 'https://github.com/OmarHdf/Medina-Website.git'
+    }
+}
+
 
         stage('Ensure Services Are Running') {
             steps {
