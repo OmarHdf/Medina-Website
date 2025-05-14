@@ -117,7 +117,7 @@ pipeline {
                     }
                 }
 
-                stage('Dependency-Check') {
+                stage('OWASP Dependency-Check') {
                     steps {
                         script {
                             withCredentials([string(credentialsId: 'NVD_API_KEY', variable: 'NVD_KEY')]) {
@@ -156,69 +156,76 @@ pipeline {
                 }
             }
         }
+stage('Docker Build') {
+    steps {
+        script {
+            echo '🔨 Construction de l\'image Docker...'
+            sh "docker build --no-cache -t ${DOCKER_IMAGE}:${NEW_VERSION} ."
+        }
+    }
+}
 
-        stage('Docker Build & Push') {
+stage('Image Security Scans') {
+    parallel {
+        stage('Trivy Image Scan') {
             steps {
                 script {
-                    echo '🔨 Construction et push de l\'image Docker...'
-                    sh "docker build --no-cache -t ${DOCKER_IMAGE}:${NEW_VERSION} ."
-                    withCredentials([usernamePassword(
-                        credentialsId: 'dockerhub',
-                        usernameVariable: 'DOCKER_USERNAME',
-                        passwordVariable: 'DOCKER_PASSWORD'
-                    )]) {
-                        sh "echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin"
-                        sh "docker push ${DOCKER_IMAGE}:${NEW_VERSION}"
-                    }
+                    echo "🛡️ Scan de l'image Docker avec Trivy..."
+                    sh """
+                        mkdir -p reports/trivy
+                        trivy image \
+                            --format json \
+                            --output reports/trivy/image-report.json \
+                            ${DOCKER_IMAGE}:${NEW_VERSION}
+                            
+                        trivy image \
+                            --format table \
+                            --output reports/trivy/image-report.txt \
+                            ${DOCKER_IMAGE}:${NEW_VERSION}
+                    """
                 }
             }
         }
 
-        stage('Image Security Scans') {
-            parallel {
-                stage('Trivy Image Scan') {
-                    steps {
-                        script {
-                            echo "🛡️ Scan de l'image Docker avec Trivy..."
-                            sh """
-                                mkdir -p reports/trivy
-                                trivy image \
-                                    --format json \
-                                    --output reports/trivy/image-report.json \
-                                    ${DOCKER_IMAGE}:${NEW_VERSION}
-                                    
-                                trivy image \
-                                    --format table \
-                                    --output reports/trivy/image-report.txt \
-                                    ${DOCKER_IMAGE}:${NEW_VERSION}
-                            """
-                        }
-                    }
-                }
+        stage('Dockle Scan') {
+            steps {
+                script {
+                    echo "🔍 Scan de l'image avec Dockle..."
+                    sh """
+                        mkdir -p reports/dockle
+                        docker run --rm \
+                            -v /var/run/docker.sock:/var/run/docker.sock \
+                            -v "${WORKSPACE}/reports/dockle:/out" \
+                            goodwithtech/dockle \
+                            -f json -o /out/report.json \
+                            ${DOCKER_IMAGE}:${NEW_VERSION} || true
 
-                stage('Dockle Scan') {
-                    steps {
-                        script {
-                            echo "🔍 Scan de l'image avec Dockle..."
-                            sh """
-                                mkdir -p reports/dockle
-                                docker run --rm \
-                                    -v /var/run/docker.sock:/var/run/docker.sock \
-                                    -v "${WORKSPACE}/reports/dockle:/out" \
-                                    goodwithtech/dockle \
-                                    -f json -o /out/report.json \
-                                    ${DOCKER_IMAGE}:${NEW_VERSION} || true
-
-                                docker run --rm \
-                                    -v /var/run/docker.sock:/var/run/docker.sock \
-                                    goodwithtech/dockle \
-                                    ${DOCKER_IMAGE}:${NEW_VERSION} > reports/dockle/report.txt 2>&1 || true
-                            """
-                        }
-                    }
+                        docker run --rm \
+                            -v /var/run/docker.sock:/var/run/docker.sock \
+                            goodwithtech/dockle \
+                            ${DOCKER_IMAGE}:${NEW_VERSION} > reports/dockle/report.txt 2>&1 || true
+                    """
                 }
             }
         }
+    }
+}
+
+stage('Docker Push') {
+    steps {
+        script {
+            echo '📤 Push de l\'image Docker...'
+            withCredentials([usernamePassword(
+                credentialsId: 'dockerhub',
+                usernameVariable: 'DOCKER_USERNAME',
+                passwordVariable: 'DOCKER_PASSWORD'
+            )]) {
+                sh "echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin"
+                sh "docker push ${DOCKER_IMAGE}:${NEW_VERSION}"
+            }
+        }
+    }
+}
 
         stage('Generate Report Summary with Ollama') {
             steps {
