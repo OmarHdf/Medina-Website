@@ -70,24 +70,7 @@ Déploiement sur Minikube avec monitoring du rollout.
 10. 📈 Post-déploiement
 Récupération de l’état des pods et affichage de l’URL d’accès à l’application.
 
-📁 Structure des rapports
-Tous les résultats des scans sont sauvegardés sous le dossier reports/ :
 
-pgsql
-Copier
-Modifier
-reports/
-├── trivy/
-│   ├── fs-report.txt
-│   ├── image-report.txt
-├── hadolint/
-│   ├── report.txt
-├── dependency-check/
-│   ├── dependency-check-report.xml
-│   ├── dependency-check.log
-├── dockle/
-│   ├── report.txt
-├── ollama_summary.txt
 📬 Notifications & Archivage
 À la fin du pipeline :
 
